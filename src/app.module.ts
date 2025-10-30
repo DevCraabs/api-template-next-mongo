@@ -1,26 +1,30 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
 import configuration from './config/configuration';
 import { validateEnv } from './config/validation';
-import { MongooseModule } from '@nestjs/mongoose';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
-    // 1) Charge .env globalement + applique la validation Zod
+    // ───── 1) Configuration globale (.env + validation) ─────
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
       validate: validateEnv,
     }),
 
-    // 2) Connexion Mongo ASYNC (attend que .env soit chargé avec footRootAsync)
+    // ───── 2) Connexion MongoDB asynchrone ─────
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
-        uri: config.get<string>('mongoUri'), // <- vient de configuration.ts
+        uri: config.get<string>('mongoUri'),
       }),
       inject: [ConfigService],
     }),
+
+    // ───── 3) Modules applicatifs ─────
+    HealthModule,
   ],
 })
 export class AppModule {}
