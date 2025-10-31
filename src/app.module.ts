@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import configuration from './config/configuration';
 import { validateEnv } from './config/validation';
 import { HealthModule } from './health/health.module';
+import { CoreModule } from './core/core.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { HealthModule } from './health/health.module';
     }),
 
     // ───── 3) Modules applicatifs ─────
+    CoreModule,
     HealthModule,
   ],
 })
