@@ -1,24 +1,27 @@
+// src/config/configuration.ts
+import {
+  APP_NAME,
+  APP_VERSION,
+  SWAGGER_TITLE,
+  SWAGGER_DESCRIPTION,
+  SWAGGER_PATH,
+  DEFAULT_PORT,
+} from './constants';
+
 export default () => ({
-  // ───── Config basique accessible partout via ConfigService ─────
-  port: Number(process.env.PORT ?? 3000),
+  port: Number(process.env.PORT) || DEFAULT_PORT,
+  mongoUri: process.env.MONGO_URI,
+  jwtSecret: process.env.JWT_SECRET,
 
-  mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/we-devart-db',
+  // App Info
+  appName: APP_NAME,
+  appVersion: APP_VERSION,
 
-  jwtSecret: process.env.JWT_SECRET || 'changeme123',
-
-  nodeEnv: process.env.NODE_ENV || 'development',
-
-  // ───── Valeurs d’identité de ton API ─────
-  appName: process.env.APP_NAME || 'WeDevArt API',
-  appVersion: process.env.APP_VERSION || '0.1',
-
-  // ───── Swagger (optionnel, mais pratique) ─────
+  // Swagger
   swagger: {
-    title: process.env.SWAGGER_TITLE || 'WeDevArt API',
-    description:
-      process.env.SWAGGER_DESCRIPTION ||
-      '📘 Documentation de l’API WeDevArt - NestJS + Mongo',
-    version: process.env.SWAGGER_VERSION || '0.1',
-    path: process.env.SWAGGER_PATH || 'docs',
+    title: SWAGGER_TITLE,
+    description: SWAGGER_DESCRIPTION,
+    version: APP_VERSION,
+    path: SWAGGER_PATH,
   },
 });

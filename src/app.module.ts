@@ -5,6 +5,7 @@ import configuration from './config/configuration';
 import { validateEnv } from './config/validation';
 import { HealthModule } from './health/health.module';
 import { CoreModule } from './core/core.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CoreModule } from './core/core.module';
 
     // ───── 3) Modules applicatifs ─────
     CoreModule,
+    UsersModule,
     HealthModule,
   ],
 })
