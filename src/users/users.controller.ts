@@ -3,6 +3,8 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { UseGuards, Request } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Users')
 @Controller('users')
@@ -48,4 +50,15 @@ export class UsersController {
   async remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
+  
+  @UseGuards(JwtAuthGuard)
+@Get('profile')
+async getProfile(@Request() req) {
+  return {
+    message: 'User profile loaded successfully',
+    user: req.user, // <-- Injecté automatiquement depuis JwtStrategy
+  };
+}
+
+
 }

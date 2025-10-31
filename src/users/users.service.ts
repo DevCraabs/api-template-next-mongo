@@ -18,6 +18,11 @@ export class UsersService {
     return this.userModel.find().select('-password').exec();
   }
 
+  async findByEmail(email: string): Promise<User | null> {
+  return this.userModel.findOne({ email }).exec();
+}
+
+
   async findOne(id: string): Promise<User> {
     const user = await this.userModel.findById(id).select('-password');
     if (!user) throw new NotFoundException(`Utilisateur ${id} introuvable.`);
