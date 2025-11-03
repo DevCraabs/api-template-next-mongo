@@ -12,6 +12,8 @@ export default () => ({
   port: Number(process.env.PORT) || DEFAULT_PORT,
   mongoUri: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '1h',
+  corsOrigins: process.env.CORS_ORIGINS || '',
 
   // App Info
   appName: APP_NAME,

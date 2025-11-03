@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,17 +23,36 @@ async function bootstrap() {
   }>('swagger');
 
   // ── CORS (sobre, on ajustera si besoin)
-  app.enableCors();
+  const allowedOrigins = (config.get<string>('CORS_ORIGINS') || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter((o) => o.length > 0);
+
+  app.enableCors({
+    origin: allowedOrigins.length > 0 ? allowedOrigins : false, // bloque si vide
+    credentials: true, // si tu veux utiliser cookies / headers
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   // ── Class-validator/transformer
   app.useGlobalPipes(
-  new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true, // ← important, active class-transformer
-  }),
-);
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true, // ← important, active class-transformer
+    }),
+  );
 
+  // ── Helmet
+  const isProd = config.get<string>('NODE_ENV') === 'production';
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: isProd ? undefined : false, // CSP activée uniquement en prod
+      crossOriginEmbedderPolicy: false, // pour Swagger et le front
+    }),
+  )
   // ── Swagger (tout depuis la config)
   const swaggerConfig = new DocumentBuilder()
     .setTitle(swaggerCfg?.title ?? appName)

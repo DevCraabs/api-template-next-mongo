@@ -1,18 +1,33 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-secret-key', // 👉 à mettre dans .env
-      signOptions: { expiresIn: '7d' }, // 7 jours
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService): JwtModuleOptions => {
+        const secret = config.get<string>('JWT_SECRET');
+        const expiresIn = config.get<string>('JWT_EXPIRES_IN') || '1h';
+
+        if (!secret) {
+          console.error('❌ JWT configuration error: JWT_SECRET is missing in environment variables.');
+          process.exit(1); // ❌ stop le serveur proprement
+        }
+
+        return {
+          secret,
+          signOptions: { expiresIn: expiresIn as any},
+        };
+      },
     }),
   ],
   controllers: [AuthController],
