@@ -7,17 +7,20 @@ import { HealthModule } from './health/health.module';
 import { CoreModule } from './core/core.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { ThrottlerModule, ThrottlerGuard, seconds } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { DebugThrottlerGuard } from './auth/debug-throttler.guard';
 
 @Module({
   imports: [
-    // ───── 1) Configuration globale (.env + validation) ─────
+    // ───── Configuration globale (.env + validation) ─────
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
       validate: validateEnv,
     }),
 
-    // ───── 2) Connexion MongoDB asynchrone ─────
+    // ───── Connexion MongoDB asynchrone ─────
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
@@ -26,11 +29,29 @@ import { AuthModule } from './auth/auth.module';
       inject: [ConfigService],
     }),
 
-    // ───── 3) Modules applicatifs ─────
+    // ───── Throttler (rate limiting global) ─────
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          name: 'global',
+          ttl: seconds(10), // 10 secondes
+          limit: 3,         // 3 requêtes max
+        },
+      ],
+    }),
+
+    // ───── Modules applicatifs ─────
+
     CoreModule,
     UsersModule,
     HealthModule,
     AuthModule,
   ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule { }

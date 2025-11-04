@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import helmet from 'helmet';
 
 
@@ -49,8 +51,10 @@ async function bootstrap() {
 
   app.use(
     helmet({
-      contentSecurityPolicy: isProd ? undefined : false, // CSP activée uniquement en prod
-      crossOriginEmbedderPolicy: false, // pour Swagger et le front
+   contentSecurityPolicy: isProd ? undefined : false,  //        désactivée en dev (Swagger)
+    crossOriginEmbedderPolicy: isProd,                  // désactivée en dev
+    crossOriginOpenerPolicy: isProd ? { policy: 'same-origin' } : false, 
+    crossOriginResourcePolicy: isProd ? { policy: 'same-origin' } : false,
     }),
   )
   // ── Swagger (tout depuis la config)
