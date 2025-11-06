@@ -6,6 +6,7 @@ export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
 export class User {
+
   @ApiProperty({ example: 'john.doe@example.com' })
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;

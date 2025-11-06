@@ -9,7 +9,8 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ThrottlerModule, ThrottlerGuard, seconds } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { DebugThrottlerGuard } from './auth/debug-throttler.guard';
+import { JwtAuthGuard } from './auth/guards/jwt_auth.guard';
+import { RolesGuard } from './auth/guards/roles_guard';
 
 @Module({
   imports: [

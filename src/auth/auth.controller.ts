@@ -21,7 +21,9 @@ export class AuthController {
   @Post('login')
 @Throttle({ default: { limit: 3, ttl: 15 } }) // 3 tentatives / 15 secondes
   @ApiOperation({ summary: 'Connexion avec email + mot de passe' })
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.email, dto.password);
+async login(@Body() dto: LoginDto) {
+  return this.authService.login(dto);
   }
+
+  
 }

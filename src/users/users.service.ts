@@ -4,13 +4,20 @@ import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import * as argon2 from 'argon2';
+
+
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) { }
 
   async create(dto: CreateUserDto): Promise<User> {
-    const user = new this.userModel(dto);
+    const hashedPassword = await argon2.hash(dto.password)
+    const user = new this.userModel({
+      ...dto,
+      password: hashedPassword,
+    });
     return user.save();
   }
 
@@ -18,9 +25,10 @@ export class UsersService {
     return this.userModel.find().select('-password').exec();
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-  return this.userModel.findOne({ email }).exec();
-}
+  async findByEmail(email: string, withPassword = false) {
+    const query = this.userModel.findOne({ email: email.toLowerCase().trim() });
+    return withPassword ? query : query.select('-password');
+  }
 
 
   async findOne(id: string): Promise<User> {
@@ -30,6 +38,11 @@ export class UsersService {
   }
 
   async update(id: string, dto: UpdateUserDto): Promise<User> {
+    // Suppression du champ role si envoyer dans la requete avant mise en db = impossible de modifier sont role sur un update
+    if ('role' in dto) {
+      delete dto.role;
+    }
+
     const updated = await this.userModel
       .findByIdAndUpdate(id, dto, { new: true })
       .select('-password');
@@ -41,4 +54,6 @@ export class UsersService {
     const deleted = await this.userModel.findByIdAndDelete(id);
     if (!deleted) throw new NotFoundException(`Utilisateur ${id} introuvable.`);
   }
+
+
 }

@@ -4,7 +4,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UseGuards, Request } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt_auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles_guard';
+import { OwnerOrAdminGuard } from 'src/auth/guards/owner_or_admin.guard';
 
 @ApiTags('Users')
 @Controller('users')
@@ -20,14 +22,17 @@ export class UsersController {
   }
 
   // ───── GET /users ─────
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   @ApiOperation({ summary: 'Récupérer tous les utilisateurs' })
   @ApiResponse({ status: 200, description: 'Liste des utilisateurs.' })
+  
   async findAll() {
     return this.usersService.findAll();
   }
 
   // ───── GET /users/:id ─────
+  @UseGuards(JwtAuthGuard, OwnerOrAdminGuard)
   @Get(':id')
   @ApiOperation({ summary: 'Récupérer un utilisateur par ID' })
   @ApiResponse({ status: 200, description: 'Utilisateur trouvé.' })
@@ -36,6 +41,7 @@ export class UsersController {
   }
 
   // ───── PATCH /users/:id ─────
+    @UseGuards(JwtAuthGuard, OwnerOrAdminGuard)
   @Patch(':id')
   @ApiOperation({ summary: 'Mettre à jour un utilisateur' })
   @ApiResponse({ status: 200, description: 'Utilisateur mis à jour.' })
@@ -44,21 +50,20 @@ export class UsersController {
   }
 
   // ───── DELETE /users/:id ─────
+  @UseGuards(JwtAuthGuard, OwnerOrAdminGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Supprimer un utilisateur' })
   @ApiResponse({ status: 204, description: 'Utilisateur supprimé.' })
   async remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
-  
-  @UseGuards(JwtAuthGuard)
-@Get('profile')
-async getProfile(@Request() req) {
-  return {
-    message: 'User profile loaded successfully',
-    user: req.user, // <-- Injecté automatiquement depuis JwtStrategy
-  };
-}
-
-
+  // ───── LOGOUT /users/:id ─────
+    @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout() {
+    return {
+      success: true,
+      message: 'Déconnexion réussie. Veuillez supprimer votre token côté client.',
+    };
+  }
 }
